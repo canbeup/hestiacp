@@ -354,7 +354,7 @@ if [ -d /etc/netplan ] && [ -z "$force" ]; then
         echo 'systemd-networkd.'
         echo ''
         echo 'It is strongly recommended to migrate to netplan, which is now the'
-        echo 'default network configuration system in newer releases of Ubuntu.'
+        echo 'default network configuration system in newer releases of Debian.'
         echo ''
         echo 'While you can leave your configuration as-is, please note that you'
         echo 'will not be able to use additional IPs properly.'
