@@ -124,7 +124,24 @@ data="$data\nNAME='hestia-nginx' VERSION='$VERSION' RELEASE='$RELEASE'"
 data="$data ARCH='$ARCH' UPDATED='$UPDATED' DESCR='internal web server'"
 data="$data TIME='$TIME' DATE='$DATE'"
 
-# Listing data
+# Checking installed hestia-zpush version
+if [ -d "/etc/sysconfig" ]; then
+    eval $(rpm --queryformat="$rpm_format" -q hestia-zpush)
+    DATE=$(date -d @$UTIME +%F)
+    TIME=$(date -d @$UTIME +%T)
+else
+    dpkg_data=$(dpkg-query -s hestia-zpush)
+    pkg_date=$(stat -c "%Y" /var/lib/dpkg/info/hestia-zpush.list)
+    ARCH=$(echo "$dpkg_data"|grep Architecture | cut -f 2 -d ' ')
+    VERSION=$(echo "$dpkg_data"|grep ^Version |cut -f 2 -d ' '|cut -f 1 -d \-)
+    RELEASE=$(echo "$dpkg_data"|grep ^Version |cut -f 2 -d ' '|cut -f 2 -d \-)
+    DATE=$(date -d @$pkg_date +"%F")
+    TIME=$(date -d @$pkg_date +"%T")
+fi
+data="$data\nNAME='hestia-zpush' VERSION='$VERSION' RELEASE='$RELEASE'"
+data="$data ARCH='$ARCH' UPDATED='$UPDATED' DESCR='activesync server'"
+data="$data TIME='$TIME' DATE='$DATE'"# Listing data
+
 case $format in
     json)   json_list ;;
     plain)  plain_list ;;
