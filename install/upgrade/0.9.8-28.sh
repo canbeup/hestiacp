@@ -60,10 +60,13 @@ fi
 
 # Set Purge to false in roundcube config - https://goo.gl/3Nja3u
 if [ -f /etc/roundcube/config.inc.php ]; then
-    sed -i "s/deletion'] = 'Purge'/deletion'] = false/g" /etc/roundcube/config.inc.php
+    sed -i "s/\['flag_for_deletion'] = 'Purge';/\['flag_for_deletion'] = false;/gI" /etc/roundcube/config.inc.php
+fi
+if [ -f /etc/roundcube/defaults.inc.php ]; then
+    sed -i "s/\['flag_for_deletion'] = 'Purge';/\['flag_for_deletion'] = false;/gI" /etc/roundcube/defaults.inc.php
 fi
 if [ -f /etc/roundcube/main.inc.php ]; then
-    sed -i "s/deletion'] = 'Purge'/deletion'] = false/g" /etc/roundcube/main.inc.php
+    sed -i "s/\['flag_for_deletion'] = 'Purge';/\['flag_for_deletion'] = false;/gI" /etc/roundcube/main.inc.php
 fi
 
 # Update Office 365 DNS templates
