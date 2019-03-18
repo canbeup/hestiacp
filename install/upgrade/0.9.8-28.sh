@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# load hestia.conf
+source /usr/local/hestia/conf/hestia.conf
+
 # Set version(s)
 pma_v='4.8.5'
 
