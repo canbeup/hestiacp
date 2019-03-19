@@ -19,7 +19,7 @@ spinner="/-\|"
 os='ubuntu'
 release="$(lsb_release -s -r)"
 codename="$(lsb_release -s -c)"
-hestiacp="$HESTIA/install/$VERSION/$release"
+hestiacp="$HESTIA/install/hestia-data"
 
 # Define software versions
 pma_v='4.8.5'
@@ -31,12 +31,13 @@ software="apache2 apache2.2-common apache2-suexec-custom apache2-utils
     apparmor-utils awstats bc bind9 bsdmainutils bsdutils clamav-daemon
     cron curl dnsutils dovecot-imapd dovecot-pop3d e2fslibs e2fsprogs exim4
     exim4-daemon-heavy expect fail2ban flex ftp git idn imagemagick
-    libapache2-mod-fcgid libapache2-mod-php libapache2-mod-rpaf php-mapi php-soap
+    libapache2-mod-fcgid libapache2-mod-php libapache2-mod-rpaf 
     libapache2-mod-ruid2 lsof mc mariadb-client mariadb-common mariadb-server nginx
-    ntpdate php php-cgi php-common php-curl phpmyadmin php-mysql phppgadmin
-    php-pgsql postgresql postgresql-contrib proftpd-basic quota roundcube-core
-    roundcube-mysql roundcube-plugins rrdtool rssh spamassassin sudo hestia
-    hestia-nginx hestia-php hestia-zpush vim-common vsftpd webalizer whois zip"
+    ntpdate php php-cgi php-common php-imap php-apcu php-curl php-mapi php-soap
+    phpmyadmin php-mysql phppgadmin php-pgsql postgresql postgresql-contrib
+    proftpd-basic quota roundcube-core roundcube-mysql roundcube-plugins rrdtool
+    rssh spamassassin sudo hestia hestia-nginx hestia-php hestia-zpush
+    vim-common vsftpd webalizer whois zip"
 
 # Defining help function
 help() {
@@ -963,9 +964,22 @@ cp -rf $hestiacp/packages $HESTIA/data/
 # Installing templates
 cp -rf $hestiacp/templates $HESTIA/data/
 
-# Copy default "Success" page for unassigned hosts
-# TO-DO: Enable when remaining packages have been updated
-# cp -rf $hestiacp/templates/web/unassigned/* /var/www/
+# Setting permissions on default page template files
+chmod 751 $HESTIA/data/templates/web/skel/document_errors/css
+chmod 751 $HESTIA/data/templates/web/skel/document_errors/js
+chmod 751 $HESTIA/data/templates/web/skel/document_errors/webfonts
+chmod 751 $HESTIA/data/templates/web/skel/public_*html/css
+chmod 751 $HESTIA/data/templates/web/skel/public_*html/js
+chmod 751 $HESTIA/data/templates/web/skel/public_*html/webfonts
+chmod 751 $HESTIA/data/templates/web/suspend/css
+chmod 751 $HESTIA/data/templates/web/suspend/js
+chmod 751 $HESTIA/data/templates/web/suspend/webfonts
+chmod 751 $HESTIA/data/templates/web/unassigned/css
+chmod 751 $HESTIA/data/templates/web/unassigned/js
+chmod 751 $HESTIA/data/templates/web/unassigned/webfonts
+
+# Install default success page
+cp -rf $hestiacp/templates/web/unassigned/* /var/www/html/
 
 # Installing firewall rules
 cp -rf $hestiacp/firewall $HESTIA/data/
@@ -1028,6 +1042,17 @@ if [ "$nginx" = 'yes' ]; then
         service php$fpm_v-fpm start >> $LOG
         check_result $? "php$fpm_v-fpm start failed"
     fi
+
+    # Add unassigned hosts configuration
+    if [ -f /usr/local/hestia/data/ips/* ]; then
+        for ip in /usr/local/hestia/data/ips/*; do
+            ipaddr=${ip##*/}
+            rm -f /etc/nginx/conf.d/$ip.conf
+            cp -f $hestiacp/nginx/unassigned.inc /etc/nginx/conf.d/$ipaddr.conf
+            sed -i 's/directIP/'$ipaddr'/g' /etc/nginx/conf.d/$ipaddr.conf
+        done
+    fi
+
     update-rc.d nginx defaults > /dev/null 2>&1
     service nginx start >> $LOG
     check_result $? "nginx start failed"
@@ -1482,8 +1507,7 @@ fi
 if [ ! -z "$(grep ^admin: /etc/passwd)" ] && [ "$force" = 'yes' ]; then
     chattr -i /home/admin/conf > /dev/null 2>&1
     userdel -f admin > /dev/null 2>&1
-    chattr -i /home/admin/conf > /dev/null 2>&1
-    mv -f /home/admin  $hst_backups/home/ > /dev/null 2>&1
+    mv -f /home/admin $hst_backups/home/ > /dev/null 2>&1
     rm -f /tmp/sess_* > /dev/null 2>&1
 fi
 if [ ! -z "$(grep ^admin: /etc/group)" ] && [ "$force" = 'yes' ]; then
@@ -1611,5 +1635,8 @@ cat $tmpfile | $send_mail -s "Hestia Control Panel" $email
 echo
 cat $tmpfile
 rm -f $tmpfile
+
+# Reload bash profile to enable Hestia commands
+source ~/.bash_profile
 
 # EOF
