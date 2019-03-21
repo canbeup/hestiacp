@@ -31,13 +31,13 @@ software="apache2 apache2.2-common apache2-suexec-custom apache2-utils
     apparmor-utils awstats bc bind9 bsdmainutils bsdutils clamav-daemon
     cron curl dnsutils dovecot-imapd dovecot-pop3d e2fslibs e2fsprogs exim4
     exim4-daemon-heavy expect fail2ban flex ftp git idn imagemagick
-    libapache2-mod-fcgid libapache2-mod-php libapache2-mod-rpaf 
+    libapache2-mod-fcgid libapache2-mod-php libapache2-mod-rpaf
     libapache2-mod-ruid2 lsof mc mariadb-client mariadb-common mariadb-server nginx
-    ntpdate php php-cgi php-common php-imap php-apcu php-curl php-mapi php-soap
-    phpmyadmin php-mysql phppgadmin php-pgsql postgresql postgresql-contrib
-    proftpd-basic quota roundcube-core roundcube-mysql roundcube-plugins rrdtool
-    rssh spamassassin sudo hestia hestia-nginx hestia-php hestia-zpush
-    vim-common vsftpd webalizer whois zip"
+    ntpdate php php-cgi php-common php-curl phpmyadmin php-mysql phppgadmin
+    php-pgsql postgresql postgresql-contrib proftpd-basic quota roundcube-core
+    roundcube-mysql roundcube-plugins rrdtool rssh spamassassin sudo hestia
+    hestia-nginx hestia-php vim-common vsftpd webalizer whois zip z-push-common
+    z-push-backend-combined"
 
 # Defining help function
 help() {
@@ -541,6 +541,14 @@ APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1 apt-key add /tmp/nginx_signing.key > /dev
 echo "(*) PHP"
 add-apt-repository -y ppa:ondrej/php > /dev/null 2>&1
 
+# Installing z-push repo
+if [ "$exim" == 'yes' ]; then
+    echo "(*) Z-PUSH"
+    echo "deb http://repo.z-hub.io/z-push:/final/Ubuntu_$release/ /" > $apt/z-push.list
+    wget --quiet http://repo.z-hub.io/z-push:/final/Ubuntu_$release/Release.key -O /tmp/z-push_signing.key
+    APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1 apt-key add /tmp/z-push_signing.key > /dev/null 2>&1
+fi
+
 # Installing MariaDB repo
 echo "(*) MariaDB"
 echo "deb [arch=amd64] http://ams2.mirrors.digitalocean.com/mariadb/repo/10.3/$VERSION $codename main" > $apt/mariadb.list
@@ -694,7 +702,8 @@ if [ "$exim" = 'no' ]; then
     software=$(echo "$software" | sed -e "s/spamassassin//")
     software=$(echo "$software" | sed -e "s/php-mapi//")
     software=$(echo "$software" | sed -e "s/php-soap//")
-    software=$(echo "$software" | sed -e "s/hestia-zpush//")
+    software=$(echo "$software" | sed -e "s/z-push-common//")
+    software=$(echo "$software" | sed -e "s/z-push-backend-combined//")
 fi
 if [ "$clamd" = 'no' ]; then
     software=$(echo "$software" | sed -e "s/clamav-daemon//")

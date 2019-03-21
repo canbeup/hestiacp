@@ -27,7 +27,7 @@ multiphp_v=("5.6" "7.0" "7.1" "7.2" "7.3")
 fpm_v="7.3"
 
 if [ "$release" -eq 9 ]; then
-    software="nginx apache2 apache2-utils apache2-suexec-custom php-mapi
+    software="nginx apache2 apache2-utils apache2-suexec-custom 
         libapache2-mod-ruid2 libapache2-mod-fcgid libapache2-mod-php php
         php-common php-cgi php-mysql php-curl php-pgsql awstats webalizer
         vsftpd proftpd-basic bind9 exim4 exim4-daemon-heavy clamav-daemon 
@@ -36,12 +36,12 @@ if [ "$release" -eq 9 ]; then
         mariadb-server postgresql postgresql-contrib phppgadmin phpmyadmin mc
         flex whois rssh git idn zip sudo bc ftp lsof ntpdate rrdtool quota
         e2fslibs bsdutils e2fsprogs curl imagemagick fail2ban dnsutils
-        bsdmainutils cron hestia hestia-nginx hestia-php hestia-zpush
-        expect libmail-dkim-perl unrar-free vim-common php-soap"
+        bsdmainutils cron hestia hestia-nginx hestia-php expect libmail-dkim-perl
+        unrar-free vim-common z-push-common z-push-backend-combined"
 else
     software="nginx apache2 apache2-utils apache2.2-common
-        apache2-suexec-custom libapache2-mod-ruid2 libapache2-mod-fcgid
-        libapache2-mod-php5 php5 php5-common php5-cgi php5-mapi
+        apache2-suexec-custom libapache2-mod-ruid2 libmail-dkim-perl
+        libapache2-mod-fcgid libapache2-mod-php5 php5 php5-common php5-cgi
         php5-mysql php5-curl php5-pgsql awstats webalizer vsftpd net-tools
         proftpd-basic bind9 exim4 exim4-daemon-heavy clamav-daemon
         spamassassin dovecot-imapd dovecot-pop3d roundcube-core
@@ -49,8 +49,8 @@ else
         mariadb-server postgresql postgresql-contrib phppgadmin phpMyAdmin mc
         flex whois rssh git idn zip sudo bc ftp lsof ntpdate rrdtool quota
         e2fslibs bsdutils e2fsprogs curl imagemagick fail2ban dnsutils
-        bsdmainutils cron hestia hestia-nginx hestia-php hestia-zpush
-        unrar-free vim-common expect libmail-dkim-perl"
+        bsdmainutils cron hestia hestia-nginx hestia-php expect unrar-free
+        vim-common z-push-common z-push-backend-combined"
 fi
 
 # Defining help function
@@ -564,6 +564,20 @@ echo "deb https://packages.sury.org/php/ $codename main" > $apt/php.list
 wget --quiet https://packages.sury.org/php/apt.gpg -O /tmp/php_signing.key
 APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1 apt-key add /tmp/php_signing.key > /dev/null 2>&1
 
+# Installing z-push repo
+if [ "$exim" == 'yes' ]; then
+    echo "(*) Z-PUSH"
+    if [ "$release" -eq 8 ]; then
+        $zpush_os='Debian_8.0'
+    else
+        $zpush_os='Debian_9.0'
+    fi
+
+    echo "deb http://repo.z-hub.io/z-push:/final/$zpush_os/ /" > $apt/z-push.list
+    wget --quiet http://repo.z-hub.io/z-push:/final/$zpush_os/Release.key -O /tmp/z-push_signing.key
+    APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1 apt-key add /tmp/z-push_signing.key > /dev/null 2>&1
+fi
+
 # Installing MariaDB repo
 echo "(*) MariaDB"
 echo "deb [arch=amd64] http://ams2.mirrors.digitalocean.com/mariadb/repo/10.3/$VERSION $codename main" > $apt/mariadb.list
@@ -726,7 +740,8 @@ if [ "$exim" = 'no' ]; then
     software=$(echo "$software" | sed -e "s/spamassassin//")
     software=$(echo "$software" | sed -e "s/php-mapi//")
     software=$(echo "$software" | sed -e "s/php-soap//")
-    software=$(echo "$software" | sed -e "s/hestia-zpush//")
+    software=$(echo "$software" | sed -e "s/z-push-common//")
+    software=$(echo "$software" | sed -e "s/z-push-backend-combined//")
 fi
 if [ "$clamd" = 'no' ]; then
     software=$(echo "$software" | sed -e "s/clamav-daemon//")
