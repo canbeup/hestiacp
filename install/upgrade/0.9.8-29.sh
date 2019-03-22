@@ -58,3 +58,26 @@ if [ -d /usr/local/hestia/data/templates/ ]; then
     chmod 751 /usr/local/hestia/data/templates/web/unassigned/js
     chmod 751 /usr/local/hestia/data/templates/web/unassigned/webfonts
 fi
+
+# == Updated fix for https://goo.gl/3Nja3u ==
+# Set Purge to false in roundcube config
+if [ -f /etc/roundcube/config.inc.php ]; then
+    sed -i "s/\['flag_for_deletion'] = 'Purge';/\['flag_for_deletion'] = false;/gI" /etc/roundcube/config.inc.php
+fi
+if [ -f /etc/roundcube/defaults.inc.php ]; then
+    sed -i "s/\['flag_for_deletion'] = 'Purge';/\['flag_for_deletion'] = false;/gI" /etc/roundcube/defaults.inc.php
+fi
+if [ -f /etc/roundcube/main.inc.php ]; then
+    sed -i "s/\['flag_for_deletion'] = 'Purge';/\['flag_for_deletion'] = false;/gI" /etc/roundcube/main.inc.php
+fi
+
+# Enable spell-check exception dictionary for Roundcube users
+if [ -f /etc/roundcube/config.inc.php ]; then
+    sed -i "s/\['spellcheck_dictionary'] = false;/\['spellcheck_dictionary'] = true;/gI" /etc/roundcube/config.inc.php
+fi
+if [ -f /etc/roundcube/defaults.inc.php ]; then
+    sed -i "s/\['spellcheck_dictionary'] = false;/\['spellcheck_dictionary'] = true;/gI" /etc/roundcube/defaults.inc.php
+fi
+if [ -f /etc/roundcube/main.inc.php ]; then
+    sed -i "s/\['spellcheck_dictionary'] = false;/\['spellcheck_dictionary'] = true;/gI" /etc/roundcube/main.inc.php
+fi
