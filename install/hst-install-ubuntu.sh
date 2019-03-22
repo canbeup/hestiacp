@@ -539,7 +539,7 @@ APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1 apt-key add /tmp/nginx_signing.key > /dev
 
 # Installing sury php repo
 echo "(*) PHP"
-add-apt-repository -y ppa:ondrej/php > /dev/null 2>&1
+LC_ALL=C.UTF-8 add-apt-repository -y ppa:ondrej/php > /dev/null 2>&1
 
 # Installing z-push repo
 if [ "$exim" == 'yes' ]; then
